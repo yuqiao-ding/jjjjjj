@@ -6,7 +6,6 @@
     <Tologin />
     <Search />
     <Page />
-    <index />
   </div>
 </template>
 
@@ -17,7 +16,6 @@ import UserProfile from './components/UserProfile'
 import Tologin from './components/Tologin'
 import Search from './components/Search'
 import Page from './components/Page'
-import index from './components/index'
 
 
 export default {
@@ -29,7 +27,6 @@ export default {
     Tologin,
     Search,
     Page,
-    index
   }
 }
 </script>
