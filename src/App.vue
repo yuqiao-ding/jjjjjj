@@ -1,32 +1,35 @@
 <template>
   <div id="app">
-    <learnVue />
-    <LoginModule />
-    <UserProfile />
-    <Tologin />
+    <!-- <learnVue />
+    <LoginModule /> -->
+    <!-- <UserProfile /> -->
+    <!-- <Tologin />
     <Search />
-    <Page />
+    <Page /> -->
+    <GetUsersInfo />
   </div>
 </template>
 
 <script>
-import learnVue from './components/learnVue'
-import LoginModule from './components/LoginModule'
-import UserProfile from './components/UserProfile'
-import Tologin from './components/Tologin'
-import Search from './components/Search'
-import Page from './components/Page'
+// import learnVue from './components/learnVue'
+// import LoginModule from './components/LoginModule'
+// import UserProfile from './components/UserProfile'
+// import Tologin from './components/Tologin'
+// import Search from './components/Search'
+// import Page from './components/Page'
+import GetUsersInfo from './components/GetUsersInfo'
 
 
 export default {
   name: 'App',
   components: {
-    learnVue,
-    LoginModule,
-    UserProfile,
-    Tologin,
-    Search,
-    Page,
+    // learnVue,
+    // LoginModule,
+    // UserProfile,
+    // Tologin,
+    // Search,
+    // Page,
+    GetUsersInfo,
   }
 }
 </script>

@@ -361,15 +361,6 @@ export default {
     this.handleUserList();
   },
   methods: {
-    // 初始页currentPage、初始每页数据数pagesize和数据data
-    // handleSizeChange(size) {
-    //   this.pagesize = size;
-    //   console.log(this.pagesize); //每页下拉显示数据
-    // },
-    // handleCurrentChange(currentPage) {
-    //   this.currentPage = currentPage;
-    //   console.log(this.currentPage); //点击第几页
-    // },
     handleUserList() {
       this.userList = this.listArray;
     },
