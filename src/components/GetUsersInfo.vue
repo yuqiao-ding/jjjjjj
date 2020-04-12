@@ -1,6 +1,13 @@
 <template>
   <div style="width:1000px; margin-left:auto; margin-right:auto; text-align:center;">
     <el-button type="primary" @click="dialogVisible = true">新增通讯录</el-button>
+
+    <div class="cantainer">
+      <el-input type="text" name id placeholder="搜索" v-model.trim="search" style="width: 10%;"></el-input>
+      <el-button @click="btn">搜索</el-button>
+      <div v-for="(item , index) of searchData" :key="index"></div>
+    </div>
+
     <el-dialog title="提示" :visible.sync="dialogVisible" :model="userInfo" width="60%" :before-close="handleClose">
       <div class="block">
         生日:
@@ -33,7 +40,7 @@
         <el-input style="width:150px;" v-model="userInfo.email" placeholder="新增用户邮箱"></el-input>
       </div>
       <div class>
-        邮箱 :
+        手机 :
         <el-input style="width:150px;" v-model="userInfo.phone" placeholder="新增用户手机"></el-input>
       </div>
       <span slot="footer" class="dialog-footer">
@@ -43,6 +50,9 @@
     </el-dialog>
     <el-dialog title="提示" :visible.sync="dialogVisible1" width="30%" :before-close="handleClose">
       <el-form ref="form" :model="editInfo" label-width="80px">
+        <el-form-item label="id">
+          <p>{{ editInfo.id}}</p>
+        </el-form-item>
         <el-form-item label="活动时间">
           <el-col :span="11">
             <el-date-picker
@@ -85,14 +95,14 @@
       <el-table-column prop="address" label="地址"></el-table-column>
       <el-table-column prop="phone" label="手机"></el-table-column>
       <el-table-column fixed="right" label="操作" width="120">
-        <template slot-scope="{row,$index}">
-          <el-button type="primary" icon="el-icon-edit" circle @click="editUser(row)" size="small"></el-button>
+        <template slot-scope="{row,id}">
+          <el-button type="primary" icon="el-icon-edit" circle @click="editUser(row,id)" size="small"></el-button>
 
           <el-button
             type="danger"
             icon="el-icon-delete"
             circle
-            @click="deleteRow(row,$index)"
+            @click="deleteRow(row,id)"
             size="small"
           ></el-button>
         </template>
@@ -108,8 +118,11 @@ import axios from "axios";
 export default {
   data() {
     return {
+      search: "",
+      searchData: [],
       userList: [],
       editInfo: {
+        id:"",
         created_at: "",
         name: "",
         email: "",
@@ -135,13 +148,30 @@ export default {
   },
   methods: {
     
-    deleteRow(rows, index) {
-      this.$confirm("确认删除？")
-        .then(() => {
-          this.userList.splice(index, 1);
+  //   deleteRow(rows, index) {
+  //     this.$confirm("确认删除？")
+  //       .then(() => {
+  //         this.userList.splice(index, 1);
+  //       })
+  //       .catch(() => {});
+  // },
+
+  deleteRow(row,id) {
+    
+      axios
+        .post("http://yuqiao.com/home/delete", 
+          {
+          id: row.id,
+    })
+        .then(function(response) {
+          console.log(id);
+          console.log(response.data);
         })
-        .catch(() => {});
+        .catch(function(error) {
+          console.log(error);
+        });
     },
+
     isNull(str) {
       if (str == "") return true;
       var regu = "^[ ]+$";
@@ -151,15 +181,31 @@ export default {
 
     editUser(row) {
       this.editInfo = Object.assign({}, row);
-
+      console.log(this.editInfo);
       this.dialogVisible1 = true;
     },
     confirm() {
-      const editInfoData = Object.assign({}, this.editInfo);
-      console.log(editInfoData);
-      console.log(editInfoData.id);
-      const index = this.userList.findIndex(v => v.id === this.editInfo.id);
-      this.userList.splice(index, 1, this.editInfo);
+      const self = this;
+
+      axios
+        .post("http://yuqiao.com/home/update", 
+          {
+          phone: self.editInfo.phone,
+          id:  self.editInfo.id,
+          name: self.editInfo.name,
+          email: self.editInfo.email,
+          address: self.editInfo.address,
+          created_at: self.editInfo.created_at,
+          age: self.editInfo.age
+    })
+        .then(function(response) {
+          console.log(response.data);
+        })
+        .catch(function(error) {
+          console.log(error);
+        });
+
+      // this.userList.splice(index, 1, this.editInfo);
       this.dialogVisible1 = false;
     },
     handleClose(done) {
@@ -168,6 +214,32 @@ export default {
           done();
         })
         .catch(() => {});
+    },
+
+      btn() {
+      var search = this.search;
+      if (this.isNull(search)) {
+        // this.$notify({
+        //   title: "警告",
+        //   message: "请输入想要搜索的内容",
+        //   type: "warning"
+        // });
+        return false;
+      } else {
+        // 不报错
+      }
+      this.searchData = this.userList.filter(function(product) {
+        // console.log(product);
+        return Object.keys(product).some(function(key) {
+          // console.log(key);
+          return (
+            String(product[key])
+              .toLowerCase()
+              .indexOf(search) > -1
+          );
+        });
+      });
+      return (this.userList = this.searchData);
     },
 
     addUser() {
@@ -185,17 +257,17 @@ export default {
         return;
       }
       // console.log(this.userInfo);
-      this.userList.push(this.userInfo);
+      // this.userList.push(this.userInfo);
       this.toAdd();
-      // this.userInfo = {
-      //   id: "",
-      //   created_at: "",
-      //   name: "",
-      //   age: "",
-      //   email: "",
-      //   phone: "",
-      //   address: ""
-      // };
+      this.userInfo = {
+        id: "",
+        created_at: "",
+        name: "",
+        age: "",
+        email: "",
+        phone: "",
+        address: ""
+      };
       this.dialogVisible = false;
     },
 
@@ -215,21 +287,6 @@ export default {
     })
         .then(function(response) {
           console.log(response.data);
-          // console.log(self.userInfo);
-          // if (0 === response.data.errCode) {
-          //   localStorage.setItem(
-          //     "echotask_access_token",
-          //     response.data.content.access_token
-          //   );
-          //   localStorage.setItem(
-          //     "echotask_expired_in",
-          //     response.data.content.expired_in
-          //   );
-          // } else {
-          //   self.$message({
-          //     message: response.data.message
-          //   });
-          // }
         })
         .catch(function(error) {
           console.log(error);
