@@ -1,10 +1,10 @@
 <template>
-  <div style="width:1000px; margin-left:auto; margin-right:auto; text-align:center;">
-    <el-button type="primary" @click="dialogVisible = true">新增通讯录</el-button>
+  <div style="width:1200px; margin-left:auto; margin-right:auto; text-align:center">
 
-    <div class="cantainer">
-      <el-input type="text" name id placeholder="搜索" v-model.trim="search" style="width: 10%;"></el-input>
-      <el-button @click="btn">搜索</el-button>
+    <div  style="text-align:left;padding-left:40px" >
+       <el-button type="primary" @click="dialogVisible = true">新增通讯录</el-button>
+      <el-input type="text" name id placeholder="搜索" v-model.trim="search" style="width: 30%;margin-left: 70px;"></el-input>
+      <el-button icon="el-icon-search" type="primary" style="margin-left: 10px;" @click="btn">搜索</el-button>
       <div v-for="(item , index) of searchData" :key="index"></div>
     </div>
 
@@ -22,10 +22,6 @@
       <div class>
         姓名 :
         <el-input style="width:150px;" v-model="userInfo.name" placeholder="新增用户姓名"></el-input>
-      </div>
-      <div class>
-        id :
-        <el-input style="width:150px;" v-model="userInfo.id" placeholder="id"></el-input>
       </div>
       <div class>
         年龄 :
@@ -86,15 +82,19 @@
         <el-button type="primary" @click="confirm">确 定</el-button>
       </span>
     </el-dialog>
-    <el-table :data="userList" border stripe fit style="width: 100% text-align: center;">
-      <el-table-column prop="id" label="编号"></el-table-column>
-      <el-table-column prop="created_at" label="日期"></el-table-column>
-      <el-table-column prop="name" label="姓名"></el-table-column>
-      <el-table-column prop="age" label="年龄"></el-table-column>
-      <el-table-column prop="email" label="邮箱"></el-table-column>
-      <el-table-column prop="address" label="地址"></el-table-column>
-      <el-table-column prop="phone" label="手机"></el-table-column>
-      <el-table-column fixed="right" label="操作" width="120">
+    <el-table :data="userList" border stripe style="width: 100% ;margin-top: 40px;">
+      <!-- <el-table-column prop="id" label="编号"></el-table-column> -->
+      <el-table-column prop="created_at" align="center" label="日期"></el-table-column>
+      <el-table-column  align="center" label="姓名">
+        <template slot-scope="scope">
+        <el-tag size="medium">{{ scope.row.name }}</el-tag>
+        </template>
+        </el-table-column>
+      <el-table-column prop="age" align="center" label="年龄"></el-table-column>
+      <el-table-column prop="email" align="center" label="邮箱"></el-table-column>
+      <el-table-column prop="address" align="center" label="地址"></el-table-column>
+      <el-table-column prop="phone" align="center" label="手机"></el-table-column>
+      <el-table-column fixed="right" align="center" label="操作" width="120">
         <template slot-scope="{row,id}">
           <el-button type="primary" icon="el-icon-edit" circle @click="editUser(row,id)" size="small"></el-button>
 
@@ -116,8 +116,9 @@
 import axios from "axios";
 
 export default {
+  inject:['reload'], 
   data() {
-    return {
+    return {              
       search: "",
       searchData: [],
       userList: [],
@@ -131,7 +132,7 @@ export default {
         address: ""
       },
       userInfo: {
-        id: "",
+        // id: "",
         created_at: "",
         name: "",
         age: "",
@@ -148,17 +149,20 @@ export default {
   },
   methods: {
     
-  //   deleteRow(rows, index) {
-  //     this.$confirm("确认删除？")
-  //       .then(() => {
-  //         this.userList.splice(index, 1);
-  //       })
-  //       .catch(() => {});
-  // },
-
   deleteRow(row,id) {
-    
-      axios
+    const index = this.userList.findIndex(v => v.id === row.id);
+    this.$confirm("确认删除？")
+        .then(() => {
+          this.userList.splice(index, 1);
+          this.del(row,id)
+        })
+        .catch(() => {});
+      
+        
+    },
+
+    del(row,id){
+       axios
         .post("http://yuqiao.com/home/delete", 
           {
           id: row.id,
@@ -204,7 +208,8 @@ export default {
         .catch(function(error) {
           console.log(error);
         });
-
+      const index = this.userList.findIndex(v => v.id === this.editInfo.id);
+      this.userList.splice(index, 1, this.editInfo);
       // this.userList.splice(index, 1, this.editInfo);
       this.dialogVisible1 = false;
     },
@@ -241,7 +246,18 @@ export default {
       });
       return (this.userList = this.searchData);
     },
-
+getUserInfo() {
+      const self = this;
+      axios
+        .get("http://yuqiao.com/home/index")
+        .then(function(response) {
+          self.userList = response.data.users;
+          
+        })
+        .catch(function(error) {
+          console.log(error);
+        });
+    },
     addUser() {
       if (
         !this.userInfo.name ||
@@ -257,10 +273,12 @@ export default {
         return;
       }
       // console.log(this.userInfo);
-      // this.userList.push(this.userInfo);
-      this.toAdd();
+      this.toAdd()
+      
+
+      console.log(this.userList);
       this.userInfo = {
-        id: "",
+        // id: "",
         created_at: "",
         name: "",
         age: "",
@@ -269,6 +287,7 @@ export default {
         address: ""
       };
       this.dialogVisible = false;
+      this.reload();
     },
 
     toAdd() {
@@ -277,7 +296,7 @@ export default {
         .post("http://yuqiao.com/home/plus", 
           {
           phone: self.userInfo.phone,
-          id: self.userInfo.id,
+          // id: self.userInfo.id,
           name: self.userInfo.name,
           email: self.userInfo.email,
           address: self.userInfo.address,
@@ -292,37 +311,15 @@ export default {
           console.log(error);
         });
     },
-    getUserInfo() {
-      const self = this;
-      axios
-        .get("http://yuqiao.com/home/index")
-        .then(function(response) {
-          console.log(response);
-          self.userList = response.data.users;
-          // let userList = JSON.parse(JSON.stringify(response.data.users));
-          console.log(self.userList);
-        })
-        .catch(function(error) {
-          console.log(error);
-        });
-
-        // axios
-      //   .get("http://yuqiao.com/add/index")
-      //   .then(function(response) {
-      //     window.console.log(response.data);
-      //     if (0 === response.data.errCode) {
-      //       // window.console.log(response.data);
-      //       self.userList = response.data;
-      //       window.console.log(self.userList);
-      //     } else {
-      //       //不输出
-      //     }
-      //   })
-      //   .catch(function(error) {
-      //     window.console.log(error);
-      //   });
-      // window.console.log("开始获取当前的登录用户信息");
-    },
+    
   }
 };
 </script>
+
+<style  scoped>
+
+.el-table td, .el-table th {
+    text-align: center;
+}
+
+</style>
